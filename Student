@@ -1,0 +1,89 @@
+public class Student {
+    private Integer id;
+    private String name;
+    private String major;
+    private Double grade;
+
+    // Constructor
+    public Student(Integer id, String name, String major, Double grade) {
+        this.id = id;
+        this.name = name;
+        this.major = major;
+        this.grade = grade;
+    }
+
+    // Getters
+    public Integer getId() { return id; }
+    public String getName() { return name; }
+    public String getMajor() { return major; }
+    public Double getGrade() { return grade; }
+
+    // For displaying in the ListView
+    @Override
+    public String toString() {
+        return String.format("%s (ID: %d, Major: %s, Grade: %.2f)", name, id, major, grade);
+    }
+}
+private ArrayList<Student> studentList = new ArrayList<>();
+
+buttonAdd.setOnAction(e -> {
+    // قراءة البيانات من الـ TextFields
+    int id = Integer.parseInt(textFieldId.getText());
+    String name = textFieldName.getText();
+    String major = textFieldMajor.getText();
+    double grade = Double.parseDouble(textFieldGrade.getText());
+
+    // إنشاء كائن جديد من Student وإضافته إلى القائمة
+    studentList.add(new Student(id, name, major, grade));
+
+    // تحديث العرض في ListView
+    updateListView(studentList);
+});
+buttonSortByName.setOnAction(e -> {
+    List<Student> sortedByName = studentList.stream()
+                                            .sorted(Comparator.comparing(Student::getName))
+                                            .collect(Collectors.toList());
+    updateListView(sortedByName);
+});
+buttonSortByName.setOnAction(e -> {
+    List<Student> sortedByName = studentList.stream()
+                                            .sorted(Comparator.comparing(Student::getName))
+                                            .collect(Collectors.toList());
+    updateListView(sortedByName);
+});
+buttonSortByGrade.setOnAction(e -> {
+    List<String> sortedByGrade = studentList.stream()
+                                            .sorted((s1, s2) -> s2.getGrade().compareTo(s1.getGrade())) // ترتيب تنازلي
+                                            .map(s -> s.getName() + " - " + s.getGrade()) // عرض الاسم والدرجة فقط
+                                            .collect(Collectors.toList());
+    updateListView(sortedByGrade);
+});
+buttonFilterRange.setOnAction(e -> {
+    List<String> filteredStudents = studentList.stream()
+                                               .filter(s -> s.getGrade() >= 80 && s.getGrade() <= 90) // التصفية
+                                               .sorted((s1, s2) -> s2.getGrade().compareTo(s1.getGrade())) // ترتيب تنازلي
+                                               .map(s -> s.getName() + " - " + s.getGrade()) // عرض الاسم والدرجة فقط
+                                               .collect(Collectors.toList());
+    updateListView(filteredStudents);
+});
+buttonCalculateAverage.setOnAction(e -> {
+    double average = studentList.stream()
+                                .mapToDouble(Student::getGrade) // تحويل إلى درجات
+                                .average() // حساب المتوسط
+                                .orElse(0.0); // في حال عدم وجود بيانات
+    listViewStudents.getItems().clear();
+    listViewStudents.getItems().add("Average Grade: " + String.format("%.2f", average));
+});
+buttonGroupByMajor.setOnAction(e -> {
+    Map<String, List<Student>> groupedByMajor = studentList.stream()
+                                                           .collect(Collectors.groupingBy(Student::getMajor)); // تجميع حسب التخصص
+    listViewStudents.getItems().clear();
+    groupedByMajor.forEach((major, students) -> {
+        listViewStudents.getItems().add("Major: " + major);
+        students.forEach(student -> listViewStudents.getItems().add("   " + student));
+    });
+});
+private void updateListView(List<?> items) {
+    listViewStudents.getItems().clear();
+    items.forEach(item -> listViewStudents.getItems().add(item.toString()));
+}
